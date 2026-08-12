@@ -50,6 +50,36 @@ To avoid spamming the network. Sends data every one and a half seconds.
 
 ## How to update.
 
+### Modern Zigbee2MQTT custom firmware upload
+
+Recent Zigbee2MQTT versions can upload a firmware file directly from the device OTA dialog. This avoids the external converter, local OTA index, global configuration change, and pre-update Zigbee2MQTT restart that were needed by the legacy procedure below.
+
+For the first update from the original Tuya firmware:
+
+1. Open the supported sensor's OTA dialog in Zigbee2MQTT.
+2. Select **Custom firmware**.
+3. Upload `bin/1141-d3a3-1111114b-tuya_co2sensor_zrd.zigbee`.
+4. Leave rollback disabled.
+5. Open the update parameters and use:
+	- Image block response delay: `200 ms`
+	- Maximum data size: `10 bytes`
+	- Image block request timeout: `300000 ms`
+6. Check for an update and start it only for the selected sensor.
+7. Run only one OTA update at a time.
+8. After completion, remove the old device entry from Zigbee2MQTT, restart Zigbee2MQTT, power-cycle the sensor for about 10 seconds, enable joining, and hold the sensor button for 5 seconds to pair it again.
+
+The `1141-d3a3-1111114b-tuya_co2sensor_zrd.zigbee` file is the first-stage Tuya-to-Slacky migration image. After the sensor has paired again as a Slacky device, use the matching secondary OTA image for the detected hardware variant when an additional update is needed.
+
+| Sensor signature | Zigbee2MQTT model after migration | Secondary OTA image |
+| --- | --- | --- |
+| `_TZE200_ogkdpgy2` / `_TZE204_ogkdpgy2` | `SLACKY_DIY_CO2_SENSOR_R01` | Use the normal r01 Slacky update path when offered. |
+| `_TZE200_yvx5lh6k` / `_TZE204_yvx5lh6k` | `SLACKY_DIY_CO2_SENSOR_R02` | `bin/6565-0393-10063001-tuya_co2sensor_zrd.zigbee` |
+| `_TZE200_mja3fuja` | `SLACKY_DIY_CO2_SENSOR_R02` | `bin/6565-0393-10253001-tuya_co2sensor_zrd.zigbee` |
+
+Do not upload a secondary image meant for a different hardware variant. `_TZE200_mja3fuja` intentionally reports as the r02 Zigbee model for Zigbee2MQTT compatibility, but it uses its own validated firmware image and datapoint handling.
+
+### Legacy local OTA index method
+
 First, add external [converter](https://github.com/slacky1965/tuya_co2sensor_zrd/tree/main/zigbee2mqtt/convertors) `tuya_co2sensor_orig.js`. He activates OTA in z2m for a sensor with firmware from Tuya.
 
 Next you need to add a local update repository.
